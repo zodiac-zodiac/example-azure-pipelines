@@ -1,0 +1,25 @@
+trigger:
+- master
+
+pool:
+  # Images are defined here.
+  # Azure image documentation is located here at https://docs.microsoft.com/en-us/azure/devops/pipelines/process/container-phases
+  # Azure documentation to register your own container is located here at https://docs.microsoft.com/en-us/azure/container-registry/
+  vmImage: 'windows-latest'
+
+steps:
+- task: PowerShell@2
+  # Define environment variables here.
+  # We will assign the SECRET to the environment variable SRCCLR_API_TOKEN
+  env: {SRCCLR_API_TOKEN: $(SRCCLR_API_TOKEN)}
+  inputs:
+    targetType: 'inline'
+    script: |
+      # To allow external apps and scripts to be ran.
+      Set-ExecutionPolicy AllSigned -Scope Process -Force
+      # Download and Execute the downloaded powershell script
+      iex ((New-Object System.Net.WebClient).DownloadString('https://download.srcclr.com/ci.ps1'))
+      # Use predefined azure pipeline variable Build.SourcesDirectory to locate your repository
+      # Finally scan it with our awesome tool! 
+      srcclr scan $(Build.SourcesDirectory)
+      
